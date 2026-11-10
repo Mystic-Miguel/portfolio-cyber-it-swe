@@ -1,17 +1,45 @@
-# Miguel Rowe – Cyber/IT/SWE Portfolio
+# Miguel Rowe — Software Engineering & Cybersecurity Portfolio
 
-## Projects (click to view)
-- fastapi-task-api · https://github.com/Mystic-Miguel/fastapi-task-api
-- data-pipeline-etl · https://github.com/Mystic-Miguel/data-pipeline-etl
-- incident-triage-dashboard · https://github.com/Mystic-Miguel/incident-triage-dashboard
-- dockerized-flask-template · https://github.com/Mystic-Miguel/dockerized-flask-template
-- resume-matcher · https://github.com/Mystic-Miguel/resume-matcher
-- network-traffic-visualizer · https://github.com/Mystic-Miguel/network-traffic-visualizer
-- url-uptime-monitor · https://github.com/Mystic-Miguel/url-uptime-monitor
-- warehouse-inventory-sim · https://github.com/Mystic-Miguel/warehouse-inventory-sim
-- syslog-to-sqlite · https://github.com/Mystic-Miguel/syslog-to-sqlite
-- soc-detection-content · https://github.com/Mystic-Miguel/soc-detection-content
-- device-repair-tracker · https://github.com/Mystic-Miguel/device-repair-tracker
-- it-support-scripts · https://github.com/Mystic-Miguel/it-support-scripts
-- ad-runbooks · https://github.com/Mystic-Miguel/ad-runbooks
-- pytest-ci-template · https://github.com/Mystic-Miguel/pytest-ci-template
+A responsive portfolio focused on real software engineering, backend development, practical web applications, and defensive cybersecurity learning.
+
+## Live preview
+
+After deployment, open the homepage at the portfolio site's root URL and use **Try the SOC triage lab** to explore the interactive security demonstration.
+
+## Run locally
+
+Open `index.html` in a browser, or from this folder run:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then visit http://localhost:8000 and http://localhost:8000/soc-lab.html.
+
+## Selected work
+
+- **Security Signal Lab** — original local-only browser demonstration that supports synthetic event review, filtering, notes, triage status updates, safe CSV/JSON import, and CSV export.
+- **FORGE Performance Tracker** — deployed browser-based fitness tracking prototype, with a separate live Vercel project.
+- **FastAPI Task API** — Python FastAPI/Pydantic CRUD endpoints, UUID identifiers, health check; currently uses in-memory persistence.
+- **Omon Braids** — responsive salon website and sample booking flow, not connected to a production booking/payment backend.
+- **Night-time Emergencies** — HTML/CSS multi-page site, with additional frontend framework experiments.
+- **Resume Matcher** — TF-IDF cosine similarity command-line tool (not a production ATS scorer).
+- **URL Uptime Monitor** — requests-based CLI for logging URL response times and status codes to CSV.
+- **Barracks Car Hunter** — car shopping and shortlist prototype; external provider integrations may be incomplete.
+- **CSV → Parquet ETL** — Pandas CSV ingestion, deduplication, string trimming and Parquet export.
+
+This site deliberately excludes aspirational claims about unbuilt functions. Status descriptions reflect inspected source or existing deployments.
+
+## Security lab data policy
+
+The SOC-style lab contains **synthetic sample alerts** only. CSV/JSON import is processed in the visitor's browser. No analytics or network collection is included in the site. It is not a production security information and event management (SIEM) platform or intrusion detection system. Investigations and notes last for the current browser session; users can export the filtered dataset to CSV.
+
+Limit imports to 1MB/500 records. Avoid uploading private company logs or operational data to unreviewed tools. Conduct cybersecurity testing only in environments you own or are authorized to test.
+
+## Deployment
+
+This is a static site: `index.html`, `soc-lab.html` and `favicon.svg`. No build command or environment credentials are required.
+
+## Source
+
+GitHub: https://github.com/Mystic-Miguel/portfolio-cyber-it-swe
