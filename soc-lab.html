@@ -1,0 +1,114 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interactive defensive security alert triage lab. Practice reviewing synthetic events and local CSV/JSON imports."><title>Security Signal Lab | Miguel Rowe</title>
+<style>
+:root{--bg:#080d13;--surface:#111b27;--surface2:#142131;--line:#2c4152;--ink:#eef6ff;--muted:#a5bbcb;--green:#9ce8c1;--blue:#97bcf5;--orange:#f2b774;--red:#f49298}*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);margin:0;line-height:1.5}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+header{border-bottom:1px solid var(--line);background:linear-gradient(115deg,#182b36,#0b121b);padding:24px max(18px,4vw)}
+header .top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header .brand{color:var(--green);font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+h1{font-size:clamp(25px,4vw,43px);letter-spacing:-.06em;line-height:1.1;margin:19px 0 11px}
+header p{font-size:13px;max-width:800px;color:var(--muted)}
+.wrap{width:min(1290px,calc(100% - 36px));margin:auto}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+.metric{border:1px solid var(--line);background:var(--surface);padding:17px;border-radius:12px}
+.metric b{font:750 28px/1.2 ui-monospace,SFMono-Regular,monospace;display:block}
+.metric span{color:var(--muted);font-size:11px}
+.metric.critical b{color:var(--red)}.metric.high b{color:var(--orange)}.metric.open b{color:var(--green)}
+.toolbar{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.toolbar input,.toolbar select{background:#0a111a;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;min-width:130px}
+.toolbar input{flex:1;min-width:210px}
+.btn{padding:10px 14px;border-radius:8px;border:1px solid #435b6c;background:#1a2d40;color:#f1f8ff;font-size:12px;font-weight:700;white-space:nowrap}
+.btn:hover{background:#263f57}.btn.primary{color:#0a271b;background:var(--green);border-color:var(--green)}
+.btn.primary:hover{background:#c2ffdf}.btn.alert{border-color:#70444d;color:#f2bdc3}
+.filelabel{display:inline-flex;align-items:center;gap:9px;cursor:pointer}
+.filelabel input{position:absolute;width:1px;height:1px;opacity:0}
+.filelabel:focus-within{outline:3px solid var(--green);outline-offset:2px}
+.layout{display:grid;grid-template-columns: minmax(0, 1fr) 350px;gap:15px;margin-bottom:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel h2{font-size:13px;letter-spacing:.02em;margin:0}.panelhead{padding:14px 17px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}
+.panelhead span{font-size:11px;color:var(--muted)}
+.tablebox{overflow:auto;max-height:515px}table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:12px;background:#0e1722;position:sticky;top:0}
+td{padding:13px 12px;border-top:1px solid #263645}
+tbody tr{cursor:pointer;transition:background .15s}tbody tr:hover,tbody tr.active{background:#25384b}tbody tr:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.sev{display:inline-block;padding:3px 7px;border-radius:4px;font-size:10px;font-weight:800;border:1px solid}
+.sev.Critical{color:#ffc0c6;background:#49232e;border-color:#87515d}.sev.High{color:#ffc58e;background:#423326;border-color:#876442}.sev.Medium{color:#cde2ff;background:#26394e;border-color:#45658d}.sev.Low{color:#a8ecc6;background:#1b3a31;border-color:#3a7056}
+.statustext{color:var(--muted)}.detail{padding:17px}.detail h3{font-size:20px;margin:3px 0 10px;line-height:1.3}
+.mono{font:11px/1.6 ui-monospace,SFMono-Regular,monospace;letter-spacing:.03em}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.meta div{border:1px solid #294155;padding:10px;border-radius:8px;min-width:0}.meta small{color:var(--muted);display:block;margin-bottom:5px;font-size:10px}.meta b{font-size:12px;overflow-wrap:anywhere}
+.detail p{color:#b9cfe0;font-size:12px;overflow-wrap:anywhere}.detail label{display:block;color:#a9c7db;font-size:11px;font-weight:700;margin:19px 0 7px}
+.detail textarea{background:#0c1520;border:1px solid var(--line);border-radius:8px;resize:vertical;padding:11px;width:100%;height:110px;font-size:12px;line-height:1.5}
+.statusrow{display:flex;gap:8px;align-items:center}.statusrow select{width:100%;background:#0a111a;border:1px solid var(--line);padding:9px;border-radius:8px;font-size:12px}
+.chartrow{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:35px}
+.chart{padding:18px}.chart h2{font-size:13px}.barchart{display:grid;gap:12px;margin-top:19px}
+.barline{display:grid;grid-template-columns:85px 1fr 38px;align-items:center;gap:9px;font-size:11px;color:#c5d6e6}
+.bartrack{height:10px;border-radius:9px;overflow:hidden;background:#25384b}.barfill{height:100%;border-radius:9px;background:var(--green)}
+.notice{border:1px solid #416651;background:#14251d;color:#c5ddce;border-radius:11px;padding:14px 16px;font-size:12px;margin:16px 0}
+.notice strong{color:var(--green)}.tip{font-size:11px;color:var(--muted);line-height:1.6}
+.foot{padding:21px 0 32px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+#message{min-height:20px;font-size:12px;color:var(--green);margin-top:6px}#message.error{color:var(--red)}
+[hidden]{display:none!important}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.chartrow{grid-template-columns:1fr 1fr}}@media(max-width:650px){.summary{grid-template-columns:repeat(2,1fr)}.chartrow{grid-template-columns:1fr}.toolbar>*{flex:1}.toolbar input{min-width:100%}.top a{font-size:11px}.meta{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><header><div class="wrap"><div class="top"><span class="brand">MR / Defensive Security Lab</span><a href="/" aria-label="Return to portfolio">← Back to portfolio</a></div><h1>Security Signal Lab</h1><p>Explore a hands-on analyst workflow: review alerts, filter severity, investigate a record, set a triage status, add notes, and export results. All sample alerts are synthetic. Imports are processed locally in the browser.</p></div></header>
+<main class="wrap">
+<div class="notice"><strong>Safe simulation.</strong> This is a browser-based educational log triage tool, not a production SIEM, real-time intrusion detector, or live connection to any network. No uploads leave this page; avoid using sensitive operational logs in an unreviewed browser tool.</div>
+<div class="summary" aria-label="Alert summary"><div class="metric"><b id="metricTotal">0</b><span>Total alerts</span></div><div class="metric critical"><b id="metricCritical">0</b><span>Critical severity</span></div><div class="metric high"><b id="metricHigh">0</b><span>High severity</span></div><div class="metric open"><b id="metricOpen">0</b><span>Open cases</span></div></div>
+<div class="toolbar"><input id="search" aria-label="Search alerts" placeholder="Search IP, event, host, or ID…"><select id="severity" aria-label="Severity filter"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><select id="statusFilter" aria-label="Status filter"><option value="">All statuses</option><option>Open</option><option>Investigating</option><option>Closed</option></select><label class="btn filelabel" role="button" tabindex="0">Import CSV / JSON<input id="importFile" type="file" accept=".csv,.json,text/csv,application/json"></label><button class="btn" id="export">Export CSV</button><button class="btn alert" id="reset">Reset sample</button></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div class="layout">
+<section class="panel"><div class="panelhead"><h2>Alert queue</h2><span id="visibleCount"></span></div><div class="tablebox"><table><thead><tr><th>Timestamp (UTC)</th><th>Severity</th><th>Event</th><th>Source IP</th><th>Host</th><th>Status</th></tr></thead><tbody id="body"></tbody></table></div><div class="panelhead"><span>Choose a row to investigate. Synthetic samples are illustrative, not evidence of real incidents.</span></div></section>
+<aside class="panel"><div class="panelhead"><h2>Investigation details</h2><span id="currentId">Select an alert</span></div><div id="detail" class="detail"><p>Choose an alert in the table to begin triage.</p></div></aside></div>
+<div class="chartrow"><section class="panel chart"><h2>Severity distribution</h2><div id="severityBars" class="barchart"></div></section><section class="panel chart"><h2>Case status distribution</h2><div id="statusBars" class="barchart"></div></section></div>
+<footer class="foot">Created for hands-on defensive security learning · Works offline once opened · No analytics or external dependencies · <a href="https://github.com/Mystic-Miguel/portfolio-cyber-it-swe" target="_blank" rel="noopener noreferrer">Review project source</a><p class="tip">Import schema: CSV headers or JSON object fields can use id, timestamp, severity, event, ip, host, status, and details. Up to 500 records and 1 MB per import. Notes are stored in memory and are not preserved after page reload unless exported.</p></footer>
+</main>
+<script>
+"use strict";
+const SAMPLE=[
+["LAB-001","2026-11-10T15:04:18Z","Critical","Multiple failed sign-ins","192.0.2.45","auth-demo-01","Open","Repeated authentication failures to a test user account within a short window."],
+["LAB-002","2026-11-10T15:06:11Z","High","Unexpected admin-group addition","198.51.100.22","directory-lab","Investigating","Simulated privileged group change outside the maintenance window."],
+["LAB-003","2026-11-10T15:11:02Z","Low","Scheduled backup completed","203.0.113.14","backup-demo-02","Closed","Routine test job completed successfully."],
+["LAB-004","2026-11-10T15:15:40Z","Medium","Executable launched from temp path","192.0.2.61","workstation-08","Open","Unusual process path in synthetic endpoint telemetry."],
+["LAB-005","2026-11-10T15:20:04Z","High","Excessive DNS queries","198.51.100.47","endpoint-11","Open","Synthetic domain lookup burst requiring validation against baseline."],
+["LAB-006","2026-11-10T15:26:49Z","Medium","Outbound connection to new endpoint","203.0.113.18","proxy-demo-01","Investigating","First-seen destination in synthetic network event."],
+["LAB-007","2026-11-10T15:28:03Z","Low","Endpoint inventory scan","192.0.2.35","device-lab-02","Closed","Authorized inventory scan in the sample environment."],
+["LAB-008","2026-11-10T15:31:15Z","Critical","Possible credential-stuffing burst","198.51.100.55","auth-demo-02","Open","High-volume failed attempts against multiple example accounts."],
+["LAB-009","2026-11-10T15:36:20Z","Medium","Privilege request denied","203.0.113.73","api-demo-03","Closed","Denied administrative API operation from a low-privilege session."],
+["LAB-010","2026-11-10T15:41:55Z","High","New scheduled task","192.0.2.84","win-lab-07","Investigating","New scheduled task created outside known baseline in test data."],
+["LAB-011","2026-11-10T15:46:13Z","Low","TLS certificate expiry warning","198.51.100.93","web-demo-01","Open","Example service certificate approaching expiration."],
+["LAB-012","2026-11-10T15:49:27Z","Medium","Unrecognized USB connection","203.0.113.88","workstation-05","Open","Removable storage device connected in simulated endpoint event."]
+];
+const KEYS=["id","timestamp","severity","event","ip","host","status","details"];
+let items=SAMPLE.map(x=>Object.fromEntries(KEYS.map((k,i)=>[k,x[i]])).valueOf()).map(x=>({...x,note:""}));
+let selectedId=items[0].id;
+const $=id=>document.getElementById(id);
+const sevNames=["Critical","High","Medium","Low"];
+const statusNames=["Open","Investigating","Closed"];
+const normSeverity=v=>{const s=String(v||"").toLowerCase().trim();return sevNames.find(x=>x.toLowerCase()===s)||"Low"};
+const normStatus=v=>{const s=String(v||"").toLowerCase().trim();return statusNames.find(x=>x.toLowerCase()===s)||"Open"};
+const safe=(s)=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const trim=(v,n=300)=>String(v??"").slice(0,n);
+const displayTime=v=>{const d=new Date(v);return Number.isFinite(d.valueOf())?d.toISOString().replace("T"," ").slice(0,19):trim(v,23)};
+const msg=(s,error=false)=>{$("message").textContent=s;$("message").classList.toggle("error",error)};
+function getFiltered(){const q=$("search").value.toLowerCase().trim(),sev=$("severity").value,status=$("statusFilter").value;return items.filter(r=>(!sev||r.severity===sev)&&(!status||r.status===status)&&(!q||[r.id,r.timestamp,r.event,r.ip,r.host,r.details].some(v=>String(v).toLowerCase().includes(q))))}
+function metric(){ $("metricTotal").textContent=items.length;$("metricCritical").textContent=items.filter(x=>x.severity==="Critical").length;$("metricHigh").textContent=items.filter(x=>x.severity==="High").length;$("metricOpen").textContent=items.filter(x=>x.status==="Open").length;}
+function bars(id,names,key,colors){const node=$(id);node.replaceChildren();for(let i=0;i<names.length;i++){let count=items.filter(x=>x[key]===names[i]).length;const row=document.createElement("div");row.className="barline";const label=document.createElement("span");label.textContent=names[i];const track=document.createElement("div");track.className="bartrack";const fill=document.createElement("div");fill.className="barfill";fill.style.width=(items.length?count/items.length*100:0)+"%";fill.style.background=colors[i];track.append(fill);const n=document.createElement("strong");n.textContent=count;row.append(label,track,n);node.append(row)}}
+function showDetail(){const item=items.find(x=>x.id===selectedId);$("currentId").textContent=item?.id||"None";
+if(!item){$("detail").innerHTML="<p>Select an alert to inspect its fields.</p>";return}
+$("detail").innerHTML='<span class="sev '+safe(item.severity)+'">'+safe(item.severity)+'</span><h3>'+safe(item.event)+'</h3><p>'+safe(item.details)+'</p><div class="meta"><div><small>Source IP</small><b>'+safe(item.ip)+'</b></div><div><small>Host</small><b>'+safe(item.host)+'</b></div><div><small>Timestamp (UTC)</small><b>'+safe(displayTime(item.timestamp))+'</b></div><div><small>Event ID</small><b>'+safe(item.id)+'</b></div></div><label for="changeStatus">Triage status</label><div class="statusrow"><select id="changeStatus">'+statusNames.map(s=>'<option '+(item.status===s?"selected":"")+'>'+s+'</option>').join("")+'</select></div><label for="analystNote">Analyst note</label><textarea id="analystNote" placeholder="Record an observation, next step, or reason for closing…"></textarea><p class="tip">Example workflow: verify baseline, identify affected hosts, review related authentication events, then document outcome.</p>';
+$("analystNote").value=item.note||"";$("changeStatus").addEventListener("change",e=>{item.status=e.target.value;render(false);msg("Status updated in this browser session.")});$("analystNote").addEventListener("input",e=>{item.note=e.target.value.slice(0,3000)})}
+function render(detail=true){metric();const filtered=getFiltered();$("visibleCount").textContent=filtered.length+" / "+items.length+" records";const tbody=$("body");tbody.replaceChildren();filtered.forEach(x=>{const tr=document.createElement("tr");tr.tabIndex=0;tr.className=x.id===selectedId?"active":"";tr.setAttribute("aria-label","Review "+x.id);const vals=[displayTime(x.timestamp),x.severity,x.event,x.ip,x.host,x.status];vals.forEach((v,i)=>{const td=document.createElement("td");if(i===1){const span=document.createElement("span");span.className="sev "+x.severity;span.textContent=v;td.append(span)}else{td.textContent=v;if(i===5)td.className="statustext"}tr.append(td)});const choose=()=>{selectedId=x.id;render(true)};tr.addEventListener("click",choose);tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();choose()}});tbody.append(tr)});if(!items.find(x=>x.id===selectedId))selectedId=filtered[0]?.id||null;bars("severityBars",sevNames,"severity",["#f49298","#f2b774","#97bcf5","#9ce8c1"]);bars("statusBars",statusNames,"status",["#9ce8c1","#97bcf5","#7d91a7"]);if(detail)showDetail()}
+function parseCSV(raw){const rows=[];let row=[],cell="",quote=false;for(let i=0;i<raw.length;i++){let c=raw[i];if(quote){if(c==='"'&&raw[i+1]==='"'){cell+='"';i++}else if(c==='"'){quote=false}else cell+=c}else if(c==='"'){quote=true}else if(c===","){row.push(cell);cell=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&raw[i+1]==="\n")i++;row.push(cell);if(row.some(x=>x.trim()))rows.push(row);row=[];cell=""}else cell+=c}if(quote)throw Error("Unclosed CSV quote");row.push(cell);if(row.some(x=>x.trim()))rows.push(row);if(!rows.length)throw Error("CSV contains no data");const names=rows.shift().map(s=>s.toLowerCase().trim());if(!names.includes("event"))throw Error('CSV needs an "event" header');return rows.map(row=>Object.fromEntries(names.map((name,i)=>[name,row[i]||""])))}
+function normalize(raw){if(!Array.isArray(raw))throw Error("JSON must contain an array of alert objects");if(!raw.length)throw Error("No records found");if(raw.length>500)throw Error("Maximum 500 records per import");return raw.map((o,i)=>{if(!o||typeof o!=="object"||Array.isArray(o))throw Error("Each record must be an object");const get=(k,fallback="")=>trim(o[k]??fallback, k==="details"?1000:260);return {id:get("id","IM-"+String(i+1).padStart(4,"0"))||"IM-"+String(i+1).padStart(4,"0"),timestamp:get("timestamp",new Date().toISOString()),severity:normSeverity(get("severity")),event:get("event","Imported event"),ip:get("ip","—"),host:get("host","—"),status:normStatus(get("status")),details:get("details","No details supplied"),note:""}})}
+$("importFile").addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>1024*1024)throw Error("File exceeds 1 MB");const raw=await file.text();const source=file.name.toLowerCase().endsWith(".json")?JSON.parse(raw):parseCSV(raw);let normalized=normalize(source);const used=new Set;normalized.forEach(x=>{let base=x.id,n=1;while(used.has(x.id))x.id=base+"-"+(++n);used.add(x.id)});items=normalized;selectedId=items[0]?.id||null;render();msg("Imported "+items.length+" records locally. No file data was uploaded.")}catch(err){msg("Import failed: "+err.message,true)}finally{e.target.value=""}});
+function csvEscape(x){let value=String(x??"").replace(/^[\s]*[=+\-@\t\r]/,s=>"'"+s);return '"'+value.replace(/"/g,'""')+'"'}
+$("export").addEventListener("click",()=>{const headers=[...KEYS,"note"];const csv=[headers.map(csvEscape).join(","),...getFiltered().map(row=>headers.map(k=>csvEscape(row[k])).join(","))].join("\r\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="security-signal-triage.csv";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);msg("Filtered alert table exported to CSV.")});
+$("reset").addEventListener("click",()=>{items=SAMPLE.map(x=>Object.fromEntries(KEYS.map((k,i)=>[k,x[i]]))).map(x=>({...x,note:""}));selectedId=items[0].id;$("search").value="";$("severity").value="";$("statusFilter").value="";render();msg("Restored the synthetic sample dataset.")});
+["search","severity","statusFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",()=>render(false)));
+document.querySelector(".filelabel").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("importFile").click()}});
+render();
+</script></body></html>
